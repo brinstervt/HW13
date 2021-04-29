@@ -1,18 +1,14 @@
-'''
-Created on Apr 29, 2021
-
-@author: rayya
-'''
-# Hint1: how to produce hashes? Source: https://docs.python.org/2/library/hashlib.html#key-derivation
-import hashlib, binascii #will use a built-in library called 'hashlib'
+import hashlib, binascii 
 import time
 import itertools
+import matplotlib.pyplot as plt
+import numpy as np
 
 def hash(password, hashType):
     hashed_pwd = hashlib.pbkdf2_hmac(hashType, #later you will changes this to sha512
                          password.encode('utf-8'),# passowrd is encoded into binary  
                          'saltPhrase'.encode('utf-8'),# 'salt' is an extra bit of info added to the password. When using randomized 'salt' dictionary attacks becomes nealry impossible. For this project keep 'salt' static. In the real world 'salt' is randomized and later exctracted from the hashed password during the verififcation process. Essentially, the 'salt' portion of the hash can be separated from the password portion.
-                         10) # number of iterations ('resolution') of the hashing computation)
+                         100) # number of iterations ('resolution') of the hashing computation)
     return binascii.hexlify(hashed_pwd)# converting binary to hex
 
 dict_array=[]
@@ -31,6 +27,7 @@ start = time.time()
 hashed_pwd_hex=hash(password, hashType)
 print(hashed_pwd_hex)
 
+
 def findPassword(dictionary, words):
     guesses = 0
     for subset in itertools.permutations(dictionary, words):
@@ -48,4 +45,21 @@ for L in range(1, 5):
         print("Elpased time: ", (finalTime), " seconds.")
         print("Guesses: ", data[1])
         break
+finalGuesses = data[1]    
+#set x, y, slope
+x = (time.time()-start)
+y = len(password)
+m, b = np.polyfit([x], [y], 1)
 
+#labels
+plt.ylabel('Password Length', fontsize=9)
+plt.xlabel('Time to Guess Password (sec)', fontsize=9)
+plt.title('Hash Type: ' + hashType + '\n Dictionary Size: ' + str(len(dict_array)) + '\n Time Required to Guess: ' + str(x) + ' sec\n Number of Guesses: ' + str(finalGuesses), fontsize=8)
+plt.plot(x, y, 'o')
+
+#plot slope
+axes = plt.gca()
+x_vals = np.array(axes.get_xlim())
+y_vals = b + m * x_vals
+plt.plot(x_vals, y_vals, '-')
+plt.show()
